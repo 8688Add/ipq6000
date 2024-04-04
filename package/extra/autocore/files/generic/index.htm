@@ -56,7 +56,7 @@
 		):match("%d+")) or 4096
 
 		local user_info = luci.sys.exec("cat /proc/net/arp | grep 'br-lan' | grep '0x2' | wc -l") or "0"
-
+                local run_time = luci.sys.exec("awk '{print int($1/86400)\"天 \"int($1%86400/3600)\"时 \"int($1%86400%3600/60)\"分 \"int($1%60)\"秒\"}' /proc/uptime")
 		local cpu_usage = "CPU: "..luci.sys.exec("top -n1 | awk '/^CPU/ { printf(\"%d%%\", 100 - $8) }'").."  NSS: "..luci.sys.exec("grep '%' /sys/kernel/debug/qca-nss-drv/stats/cpu_load_ubi | awk -F ' ' '{print $2}'") or "6%"
 		local cpu_info = luci.sys.exec("/sbin/cpuinfo") or "?"
 
@@ -68,7 +68,8 @@
 		local rv = {
 			cpuinfo    = cpu_info,
 			cpuusage   = cpu_usage,
-			ethinfo    = eth_info,
+			runtime = run_time,
+	                ethinfo    = eth_info,
 			userinfo   = user_info,
 			uptime     = sysinfo.uptime or 0,
 			localtime  = os.date(),
@@ -678,7 +679,10 @@
 			if (e = document.getElementById('cpuinfo'))
 				e.innerHTML = info.cpuinfo;
 
-			if (e = document.getElementById('loadavg'))
+			if (e = document.getElementById('runtime'))
+				e.innerHTML = info.runtime;
+	
+	                if (e = document.getElementById('loadavg'))
 				e.innerHTML = String.format(
 					'%.02f, %.02f, %.02f',
 					info.loadavg[0] / 65535.0,
@@ -736,7 +740,7 @@
 		</td></tr>
 		<tr><td width="33%"><%:Kernel Version%></td><td><%=unameinfo.release or "?"%></td></tr>
 		<tr><td width="33%"><%:Local Time%></td><td id="localtime">-</td></tr>
-		<tr><td width="33%"><%:Uptime%></td><td id="uptime">-</td></tr>
+		<tr><td width="33%"><%:Uptime%></td><td id="runtime">-</td></tr>
 		<tr><td width="33%"><%:Load Average%></td><td id="loadavg">-</td></tr>
 		<tr><td width="33%"><%:CPU usage (%)%></td><td id="cpuusage">-</td></tr>
 	</table>
